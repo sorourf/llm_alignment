@@ -152,21 +152,31 @@ $\text{Loss } \sum_{t=0}^{T} \pi_\theta(a_t|s_t) \cdot A_t$
 
 $\text{Loss } \sum_{t=0}^{T} \log \pi_\theta(a_t|s_t) \cdot A_t$
 
-The fundamental idea is to update model parameters to make good actions more likely. The policy gradient loss is:
+The fundamental principle of policy gradient methods is to optimize model parameters to increase the probability of actions that lead to higher rewards. The policy gradient loss function is formulated as:
 
 $L_{PG} = -\log(\pi_\theta(a_t|s_t)) \cdot A_t$
 
 Where:
-- $\pi_\theta(a_t|s_t)$ is the probability of taking action $a_t$ in state $s_t$
-- $A_t$ is the advantage of that action
-- The negative sign turns this into a minimization problem for gradient descent
+- $\pi_\theta(a_t|s_t)$ represents the probability of selecting action $a_t$ in state $s_t$ under policy $\pi_\theta$
+- $A_t$ denotes the advantage of that action
+- The negative sign converts this into a minimization problem for gradient descent optimization
 
-This creates a similar effect to supervised learning:
-- When $A_t > 0$ (action was better than average), we increase the probability of that action
-- When $A_t < 0$ (action was worse than average), we decrease the probability
-- The magnitude of $A_t$ determines how much to adjust the probabilities
+This formulation creates an effect analogous to supervised learning:
+- For $A_t > 0$ (actions better than average), the probability of that action increases
+- For $A_t < 0$ (actions worse than average), the probability decreases
+- The magnitude of $A_t$ determines the scale of probability adjustment
 
-The key insight is that by using the advantage as a scaling factor, we can train without explicit "correct" tokens—we only need to know how good each action was relative to average performance.****
+The key insight is that by utilizing the advantage as a scaling factor, we can train models without requiring explicit "correct" tokens—we simply need to determine how good each action was relative to average performance.
+
+To implement policy gradient methods effectively, we take steps in the direction of the gradient of this expression. Through mathematical derivation, we can determine that the loss function that produces this gradient is the probability of the action multiplied by the advantage. For complete trajectories, we aggregate this loss across all time steps.
+
+The logarithmic form of the probability in the loss function provides mathematical convenience. This formulation maintains the desired directional updates while offering better numerical properties and theoretical connections to information theory. This approach differs fundamentally from supervised fine-tuning, where loss functions typically measure the distance between model predictions and ground truth labels.
+
+Having established the loss function, we must address a critical question: how do we calculate the advantage term $A_t$? Various reinforcement learning algorithms employ different methods. Two notable approaches are Proximal Policy Optimization (PPO) from OpenAI and Grouped Reference Policy Optimization (GRPO) from DeepSeek.
+
+This tutorial focuses on PPO, which employs the following principle: since we lack knowledge of the "correct" action (unlike in supervised learning), we compare each action against the average expected outcome. PPO defines advantage by answering the question: "How much better than average was the action we selected?" or "How much improvement did we achieve compared to a baseline policy?"
+
+While the policy gradient loss provides a theoretical framework for updating our model, we require a mechanism to calculate the advantage term $A_t$. This is where the **Value Function** becomes essential, providing a critical component for estimating the quality of each state and enabling us to determine the relative advantage of our actions.
 
 ## The Value Function and Actor-Critic Architecture
 
