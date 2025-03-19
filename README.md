@@ -41,29 +41,6 @@ Let's consider the GSM8K dataset example:
 ![Test Image 1](image/ali2.png)
 
 This sparse reward signal makes training particularly challenging, as we must propagate this single value through billions of parameters.
-
-## Understanding Policy Gradient Methods
-
-### The Policy Concept
-In RL terminology, the LLM is referred to as a **policy** ($\pi_\theta$), where $\theta$ represents the model parameters. This is a crucial concept to understand:
-
-- The policy $\pi_\theta$ is simply another name for our language model—it's the same neural network with billions of parameters that we've been discussing.
-- The subscript $\theta$ explicitly reminds us that the model has parameters that we can adjust during training.
-
-When we use a language model to generate text, what's actually happening is:
-
-1. We input a state $s_t$ (the prompt plus previously generated tokens)
-2. The model (policy) processes this input through its layers
-3. The final layer outputs a probability distribution over the entire vocabulary
-4. This distribution $\pi_\theta(·|s_t)$ tells us the probability of each possible next token
-
-For example, if we're at a state where the model has already generated "To find", the policy $\pi_\theta(·|s_t)$ might assign:
-- 0.7 probability to "out"
-- 0.1 probability to "the"
-- 0.05 probability to "a"
-- And smaller probabilities to thousands of other tokens
-
-We then sample from this distribution to select the next token (or use techniques like greedy sampling or beam search).
 Consider a training scenario with a model like Llama:
 
 1. We input a math problem as a prompt
@@ -109,6 +86,29 @@ This is extremely difficult even at an intuitive level. We're trying to use a si
 
 Making this training process robust is considered the "Holy Grail" of reinforcement learning. Algorithms like PPO incorporate decades of research and numerous tricks to make this process work in practice.
 
+
+## Understanding Policy Gradient Methods
+
+### The Policy Concept
+In RL terminology, the LLM is referred to as a **policy** ($\pi_\theta$), where $\theta$ represents the model parameters. This is a crucial concept to understand:
+
+- The policy $\pi_\theta$ is simply another name for our language model—it's the same neural network with billions of parameters that we've been discussing.
+- The subscript $\theta$ explicitly reminds us that the model has parameters that we can adjust during training.
+
+When we use a language model to generate text, what's actually happening is:
+
+1. We input a state $s_t$ (the prompt plus previously generated tokens)
+2. The model (policy) processes this input through its layers
+3. The final layer outputs a probability distribution over the entire vocabulary
+4. This distribution $\pi_\theta(·|s_t)$ tells us the probability of each possible next token
+
+For example, if we're at a state where the model has already generated "To find", the policy $\pi_\theta(·|s_t)$ might assign:
+- 0.7 probability to "out"
+- 0.1 probability to "the"
+- 0.05 probability to "a"
+- And smaller probabilities to thousands of other tokens
+
+We then sample from this distribution to select the next token (or use techniques like greedy sampling or beam search).
 
 ### Supervised vs Reinforcement Learning Approaches
 
