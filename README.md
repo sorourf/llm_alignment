@@ -64,6 +64,51 @@ For example, if we're at a state where the model has already generated "To find"
 - And smaller probabilities to thousands of other tokens
 
 We then sample from this distribution to select the next token (or use techniques like greedy sampling or beam search).
+Consider a training scenario with a model like Llama:
+
+1. We input a math problem as a prompt
+2. The model generates a response
+3. We check if the final answer (e.g., "72") matches the reference answer
+
+The model might generate a response beginning with "To find out..." and eventually concluding with the answer "72".
+
+Let's break down how this maps to our reinforcement learning framework:
+
+1. **Initial State (S₀)**: The math problem prompt
+2. **First Action (a₀)**: The model predicts the token "To"
+3. **State Update**: Environment updates to State S₁ = [prompt + "To"]
+4. **Second Action (a₁)**: Model predicts the token "find"
+5. **State Update**: Environment updates to State S₂ = [prompt + "To find"]
+6. **Third Action (a₂)**: Model predicts the token "out"
+7. **State Update**: Environment updates to State S₃ = [prompt + "To find out"]
+
+This process continues token by token until the model generates an end token, concluding the episode.
+
+### The Sparse Reward Challenge
+
+The critical challenge in this setup is that we can only evaluate the quality of the response at the very end:
+
+- **Reward Assignment**: When the model finishes generating the complete answer, we extract the final numerical answer ("72")
+- **Reward Calculation**: If it matches the reference answer, we assign a positive reward (e.g., reward = 1)
+- **Intermediate Rewards**: All other steps in the generation process receive zero reward
+
+This creates what's known as a **sparse reward** problem. Some implementations might use more sophisticated reward schemes:
+
+- DeepSeek scores responses on both correctness and formatting
+- Some projects use external reward models to provide intermediate rewards (e.g., after each sentence)
+
+### The Credit Assignment Problem
+
+The fundamental challenge can now be clearly seen: with only a single numeric reward at the end of a potentially long sequence of actions, how do we:
+
+1. Determine which specific actions (tokens) contributed positively?
+2. Correctly update billions of model parameters?
+3. Avoid overemphasizing the final tokens just because they're temporally closer to the reward?
+
+This is extremely difficult even at an intuitive level. We're trying to use a single value to update billions of parameters across a long sequence of decisions. The brittleness of this approach is why reinforcement learning for LLMs is so challenging.
+
+Making this training process robust is considered the "Holy Grail" of reinforcement learning. Algorithms like PPO incorporate decades of research and numerous tricks to make this process work in practice.
+
 
 ### Supervised vs Reinforcement Learning Approaches
 
