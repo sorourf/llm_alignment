@@ -38,7 +38,7 @@ Let's consider the GSM8K dataset example:
 - **Actions**: Generating tokens like "Natalie sold..." 
 - **Final Reward**: 1 if the answer is correct (e.g., "72"), 0 otherwise
 - 
-![Test Image 1](image/ali_2.png)
+![Test Image 1](image/ali2.png)
 
 This sparse reward signal makes training particularly challenging, as we must propagate this single value through billions of parameters.
 
