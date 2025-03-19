@@ -44,7 +44,7 @@ This sparse reward signal makes training particularly challenging, as we must pr
 ## Understanding Policy Gradient Methods
 
 ### The Policy Concept
-In RL terminology, the LLM is referred to as a **policy** (π_θ), where θ represents the model parameters. The policy:
+In RL terminology, the LLM is referred to as a **policy** ($\pi_\theta$), where $\theta$ represents the model parameters. The policy:
 - Takes a state as input (e.g., prompt + previously generated tokens)
 - Outputs a probability distribution over possible actions (tokens)
 - Samples actions from this distribution during generation
@@ -56,18 +56,19 @@ The fundamental idea is to update model parameters to make good actions more lik
 - Taking gradient steps to increase probabilities of advantageous actions
 
 The simplified policy gradient loss is:
-L_PG = -log(π_θ(a_t|s_t)) * A_t
+
+$$L_{PG} = -\log(\pi_\theta(a_t|s_t)) \cdot A_t$$
 
 Where:
-- π_θ(a_t|s_t) is the probability of taking action a_t in state s_t
-- A_t is the advantage of that action
+- $\pi_\theta(a_t|s_t)$ is the probability of taking action $a_t$ in state $s_t$
+- $A_t$ is the advantage of that action
 - The negative sign turns this into a minimization problem for gradient descent
 
 ## The Value Function and Actor-Critic Architecture
 
 ### State Value Function
-The **value function** (V_ϕ) estimates how good a given state is. It:
-- Has its own separate parameters ϕ
+The **value function** ($V_\phi$) estimates how good a given state is. It:
+- Has its own separate parameters $\phi$
 - Predicts the expected future rewards from a given state
 - Helps compute the advantage of actions
 
@@ -84,11 +85,23 @@ PPO uses an actor-critic architecture:
 
 ### Value Function Loss
 The value function is trained to predict the discounted sum of future rewards:
-A(s_t, a_t) = Q(s_t, a_t) - V(s_t)
+
+$$L_{VF} = (V_\phi(s_t) - G_t)^2$$
+
+Where $G_t$ is the discounted return (actual sum of future rewards).
+
+## Generalized Advantage Estimation (GAE)
+
+### The Advantage Dilemma
+The advantage function tries to answer: "How much better was this action than average?"
+
+Mathematically:
+
+$$A(s_t, a_t) = Q(s_t, a_t) - V(s_t)$$
 
 Where:
-- Q(s_t, a_t) is the expected return of taking action a_t in state s_t
-- V(s_t) is the expected return from state s_t (regardless of action)
+- $Q(s_t, a_t)$ is the expected return of taking action $a_t$ in state $s_t$
+- $V(s_t)$ is the expected return from state $s_t$ (regardless of action)
 
 ### Computing the Advantage
 Two extreme approaches to calculate the advantage:
@@ -96,23 +109,26 @@ Two extreme approaches to calculate the advantage:
 2. **Bootstrapping**: Use the value function estimate of the next state (low variance, high bias)
 
 The bootstrapped advantage estimate is:
-δ_t = r_t + γV(s_{t+1}) - V(s_t)
+
+$$\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$$
 
 ### Generalized Advantage Estimation
 PPO uses GAE to balance bias and variance:
-A^GAE_t = Σ(γλ)^i δ_{t+i}
+
+$$A^{GAE}_t = \sum_{i=0}^{\infty} (\gamma \lambda)^i \delta_{t+i}$$
+
 Where:
-- λ controls the bias-variance tradeoff (0 ≤ λ ≤ 1)
-- γ is the discount factor
-- δ_t is the temporal difference residual
+- $\lambda$ controls the bias-variance tradeoff (0 ≤ λ ≤ 1)
+- $\gamma$ is the discount factor
+- $\delta_t$ is the temporal difference residual
 
 This creates a weighted combination of advantage estimates at different time scales.
 
 ## The PPO Algorithm: End-to-End Training
 
 ### Basic Training Loop
-1. Initialize policy parameters θ (usually from a pre-trained LLM)
-2. Initialize value function parameters ϕ
+1. Initialize policy parameters $\theta$ (usually from a pre-trained LLM)
+2. Initialize value function parameters $\phi$
 3. For each training iteration:
    - Collect trajectories (LLM completions) using current policy
    - Compute returns and advantages for each state-action pair
@@ -120,8 +136,8 @@ This creates a weighted combination of advantage estimates at different time sca
 
 ### Multi-Epoch Training Challenge
 PPO improves efficiency by reusing the same batch of trajectories for multiple updates. However, this introduces a distribution mismatch:
-- Trajectories were sampled using the old policy (θ_old)
-- Updates are computed using the current policy (θ)
+- Trajectories were sampled using the old policy ($\theta_{old}$)
+- Updates are computed using the current policy ($\theta$)
 
 ## Importance Sampling in PPO
 
@@ -131,13 +147,15 @@ To address the distribution mismatch in multi-epoch training, PPO uses importanc
 - Adjusts the loss proportionally to this ratio
 
 The importance sampling ratio is:
-r_t(θ) = π_θ(a_t|s_t) / π_θ_old(a_t|s_t)
+
+$$r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$$
 
 This ratio measures how much the probability of an action has changed after parameter updates.
 
 ### Surrogate Loss
 PPO replaces the log-probability in the original policy gradient with the importance sampling ratio:
-L_CLIP_surrogate = r_t(θ) * A_t
+
+$$L_{CLIP\_surrogate} = r_t(\theta) \cdot A_t$$
 
 This allows multiple training epochs on the same data while maintaining mathematical correctness.
 
@@ -145,11 +163,12 @@ This allows multiple training epochs on the same data while maintaining mathemat
 
 ### The Clipping Mechanism
 PPO's main innovation is constraining policy updates to prevent instability. It clips the importance sampling ratio:
-L_CLIP = min(r_t(θ) * A_t, clip(r_t(θ), 1-ε, 1+ε) * A_t)
+
+$$L_{CLIP} = \min(r_t(\theta) \cdot A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \cdot A_t)$$
 
 Where:
-- ε is a hyperparameter (typically 0.1 or 0.2)
-- clip(r_t(θ), 1-ε, 1+ε) restricts the ratio to the range [1-ε, 1+ε]
+- $\epsilon$ is a hyperparameter (typically 0.1 or 0.2)
+- $\text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)$ restricts the ratio to the range $[1-\epsilon, 1+\epsilon]$
 
 This clipping mechanism:
 - Prevents excessively large policy updates
@@ -158,9 +177,9 @@ This clipping mechanism:
 
 ### The Complete PPO Loss
 The final PPO objective combines the clipped surrogate loss with the value function loss:
-L_PPO = L_CLIP - c_1 * L_VF + c_2 * S[π_θ]
+
+$$L_{PPO} = L_{CLIP} - c_1 \cdot L_{VF} + c_2 \cdot S[\pi_\theta]$$
 
 Where:
-- c_1 and c_2 are coefficients
-- S[π_θ] is an optional entropy bonus term to encourage exploration
-
+- $c_1$ and $c_2$ are coefficients
+- $S[\pi_\theta]$ is an optional entropy bonus term to encourage exploration
