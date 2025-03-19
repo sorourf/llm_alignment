@@ -30,7 +30,7 @@ Unlike physical agents like robots, LLMs work with:
 - **Trajectories (τ)**: Complete sequences of states and actions (full generations)
 - **Rewards (R)**: Often sparse (only at completion) based on quality metrics
 
-![Test Image 1](ali_1.png)
+![Test Image 1](image/ali_1.png)
 
 ### Example: Math Reasoning Task
 Let's consider the GSM8K dataset example:
