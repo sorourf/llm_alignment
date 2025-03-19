@@ -138,19 +138,35 @@ Policy gradient methods solve this by:
 
 
 ### Policy Gradient Loss
-The fundamental idea is to update model parameters to make good actions more likely. This is achieved through:
-- Defining an **advantage** (A) for each action that indicates how much better the action was compared to average
-- Scaling the probability of the action by this advantage
-- Taking gradient steps to increase probabilities of advantageous actions
+![Test Image 1](image/ali_3.png)
 
-The simplified policy gradient loss is:
+$a_2 \sim \pi_\theta(s_2)$
 
-$$L_{PG} = -\log(\pi_\theta(a_t|s_t)) \cdot A_t$$
+$\mathbb{P}(a_2) = \pi_\theta(a_2|s_2) \cdot A_2$
+
+$\text{Update } \nabla_\theta\pi_\theta(a_2|s_t) \cdot A_2$
+
+$\text{Loss } \pi_\theta(a_2|s_2) \cdot A_2$
+
+$\text{Loss } \sum_{t=0}^{T} \pi_\theta(a_t|s_t) \cdot A_t$
+
+$\text{Loss } \sum_{t=0}^{T} \log \pi_\theta(a_t|s_t) \cdot A_t$
+
+The fundamental idea is to update model parameters to make good actions more likely. The policy gradient loss is:
+
+$L_{PG} = -\log(\pi_\theta(a_t|s_t)) \cdot A_t$
 
 Where:
 - $\pi_\theta(a_t|s_t)$ is the probability of taking action $a_t$ in state $s_t$
 - $A_t$ is the advantage of that action
 - The negative sign turns this into a minimization problem for gradient descent
+
+This creates a similar effect to supervised learning:
+- When $A_t > 0$ (action was better than average), we increase the probability of that action
+- When $A_t < 0$ (action was worse than average), we decrease the probability
+- The magnitude of $A_t$ determines how much to adjust the probabilities
+
+The key insight is that by using the advantage as a scaling factor, we can train without explicit "correct" tokens—we only need to know how good each action was relative to average performance.****
 
 ## The Value Function and Actor-Critic Architecture
 
