@@ -11,10 +11,7 @@ Proximal Policy Optimization (PPO) is a reinforcement learning algorithm that ha
 5. [The PPO Algorithm: End-to-End Training](#the-ppo-algorithm-end-to-end-training)
 6. [Importance Sampling in PPO](#importance-sampling-in-ppo)
 7. [PPO Clipping: The Key Innovation](#ppo-clipping-the-key-innovation)
-8. [Implementation Guide with Code Examples](#implementation-guide-with-code-examples)
-9. [Hyperparameter Tuning for LLM Alignment](#hyperparameter-tuning-for-llm-alignment)
-10. [Common Pitfalls and Troubleshooting](#common-pitfalls-and-troubleshooting)
-11. [Advanced Concepts and Recent Developments](#advanced-concepts-and-recent-developments)
+
 
 ## Reinforcement Learning Fundamentals for LLMs
 
@@ -33,6 +30,8 @@ Unlike physical agents like robots, LLMs work with:
 - **Trajectories (τ)**: Complete sequences of states and actions (full generations)
 - **Rewards (R)**: Often sparse (only at completion) based on quality metrics
 
+![Test Image 1](ali_1.png)
+
 ### Example: Math Reasoning Task
 Let's consider the GSM8K dataset example:
 - **Initial State (S₀)**: The math problem prompt
@@ -44,10 +43,52 @@ This sparse reward signal makes training particularly challenging, as we must pr
 ## Understanding Policy Gradient Methods
 
 ### The Policy Concept
-In RL terminology, the LLM is referred to as a **policy** ($\pi_\theta$), where $\theta$ represents the model parameters. The policy:
-- Takes a state as input (e.g., prompt + previously generated tokens)
-- Outputs a probability distribution over possible actions (tokens)
-- Samples actions from this distribution during generation
+In RL terminology, the LLM is referred to as a **policy** ($\pi_\theta$), where $\theta$ represents the model parameters. This is a crucial concept to understand:
+
+- The policy $\pi_\theta$ is simply another name for our language model—it's the same neural network with billions of parameters that we've been discussing.
+- The subscript $\theta$ explicitly reminds us that the model has parameters that we can adjust during training.
+
+When we use a language model to generate text, what's actually happening is:
+
+1. We input a state $s_t$ (the prompt plus previously generated tokens)
+2. The model (policy) processes this input through its layers
+3. The final layer outputs a probability distribution over the entire vocabulary
+4. This distribution $\pi_\theta(·|s_t)$ tells us the probability of each possible next token
+
+For example, if we're at a state where the model has already generated "To find", the policy $\pi_\theta(·|s_t)$ might assign:
+- 0.7 probability to "out"
+- 0.1 probability to "the"
+- 0.05 probability to "a"
+- And smaller probabilities to thousands of other tokens
+
+We then sample from this distribution to select the next token (or use techniques like greedy sampling or beam search).
+
+### Supervised vs Reinforcement Learning Approaches
+
+#### In Supervised Learning:
+When training language models with supervised learning, we:
+1. Have a reference "correct" token for each position
+2. Create a target distribution where this correct token has probability 1.0 and all others have 0.0
+3. Measure the divergence (typically cross-entropy) between:
+   - The model's predicted distribution $\pi_\theta(·|s_t)$
+   - This target "one-hot" distribution
+4. Update model parameters to make the predicted distribution closer to the target
+
+After each update, the probability of the correct token increases slightly while all others decrease.
+
+#### In Reinforcement Learning (Policy Gradient):
+With RL, we don't have reference "correct" tokens. Instead:
+1. We sample actions (tokens) from the model's predicted distribution
+2. We evaluate the quality of the resulting trajectory using a reward function
+3. We want to adjust the model to make good actions (those leading to high rewards) more likely
+
+The challenge becomes: **How do we know which specific actions contributed to the final reward?** This is the credit assignment problem.
+
+Policy gradient methods solve this by:
+1. Defining an **advantage** $A_t$ for each action
+2. Using this advantage as a scaling factor for updates
+3. Making actions with positive advantage more likely, and actions with negative advantage less likely
+
 
 ### Policy Gradient Loss
 The fundamental idea is to update model parameters to make good actions more likely. This is achieved through:
