@@ -225,7 +225,7 @@ $L_t^{VF} = (V_\phi(s_t) - G_t)^2$
 
 Where $G_t$ is the discounted return (actual sum of future rewards).
 
-This loss compares the estimated value of a state from our model against the actual discounted return observed. By minimizing this loss, the value function learns to accurately predict expected future rewards.
+This loss compares the estimated value of a state from our model against the total discounted return. By minimizing this loss, the value function learns to accurately predict expected future rewards.
 
 Now, in addition to our policy gradient loss function, we also have a value function loss. Both are optimized simultaneously during training, allowing the agent to improve both its action selection and its state evaluation capabilities.
 
