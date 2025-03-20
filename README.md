@@ -181,21 +181,51 @@ While the policy gradient loss provides a theoretical framework for updating our
 ## The Value Function and Actor-Critic Architecture
 
 ### State Value Function
-The **value function** ($V_\phi$) estimates how good a given state is. It:
-- Has its own separate parameters $\phi$
-- Predicts the expected future rewards from a given state
-- Helps compute the advantage of actions
+To understand how we calculate the advantage term, we need to introduce a core concept in modern reinforcement learning: the **value function**, denoted by $V_\phi$. This is another model used by the agent, separate from the LLM, with its own parameters $\phi$.
 
-For example:
-- A nonsensical state like "beep boop bop" would have low value
-- A promising start like "To find out" would have medium value
-- A correct solution like "Answer is 72" would have high value
+Examining our entire trajectory with $T+1$ states and $T$ actions, the value function provides an assessment of each state. It tells us how good the response is so far, regardless of what we'll predict next.
+
+For our math reasoning task:
+- A nonsensical state like "beep boop bop" would have a low value (a dead end from which it's difficult to recover)
+- The phrase "To find out" would have medium value (as there are both good and bad ways to complete the response)
+- The state "Answer is 72" would have high value (as it has already discovered the correct response)
 
 ### Actor-Critic Models
-PPO uses an actor-critic architecture:
-- The **actor** is the policy (LLM) that takes actions
-- The **critic** is the value function that evaluates states
+Models that incorporate both a policy and a value function are called **actor-critic models**:
+- The **actor** (policy/LLM) takes actions, generating tokens
+- The **critic** (value function) constantly judges the quality of states
 - Both components are trained simultaneously but with different objectives
+
+PPO belongs to this broad family of actor-critic algorithms.
+
+### Formal Definition of the Value Function
+Formally, the true value $V(s_t)$ of a state $s_t$ is the expectation of future rewards:
+
+$V(s_t) = E_{\tau \sim \pi} [r_t + r_{t+1} + ... + r_T | s_t]$
+
+This expectation is over all trajectories $\tau$ sampled from the policy $\pi$ – in other words, all possible completions of the response so far. This is how we intuitively know that "beep boop bop" is a poor state; implicitly, we're considering all possible completions and concluding that most are unlikely to correctly answer our math question.
+
+Computing this value directly is virtually impossible – we would need to expand an entire tree with a branching factor equal to the vocabulary size (tens of thousands of tokens). Instead, we use a parametric model $V_\phi$ to approximate it.
+
+### Discount Factor and Discounted Return
+We typically add a discount factor $\gamma$ (gamma), a hyperparameter between 0 and 1, which causes rewards further in the future to contribute less to the current state value in an exponentially decaying manner:
+
+$V(s_t) = E_{\tau \sim \pi} [r_t + \gamma r_{t+1} + ... + \gamma^{(T-t)}r_T | s_t]$
+
+This can be written more concisely as:
+
+$V(s_t) = E_{\tau \sim \pi} [G_t | s_t]$    (G_t = total discounted return)
+
+Where $G_t$ represents the total discounted return from state $s_t$ onwards.
+
+### Training the Value Function
+The value function is trained to predict the discounted sum of future rewards. To train our value function model $V_\phi$ to converge to this ideal value, we use gradient descent with a mean squared error loss function:
+
+$L_t^{VF} = (V_\phi(s_t) - G_t)^2$
+
+This loss compares the estimated value of a state from our model against the actual discounted return observed. By minimizing this loss, the value function learns to accurately predict expected future rewards.
+
+Now, in addition to our policy gradient loss function, we also have a value function loss. Both are optimized simultaneously during training, allowing the agent to improve both its action selection and its state evaluation capabilities.
 
 ### Value Function Loss
 The value function is trained to predict the discounted sum of future rewards:
