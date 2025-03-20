@@ -202,9 +202,9 @@ The value function is trained to predict the discounted sum of future rewards:
 
 $V(s_t) = E_[τ~π] [r_t + r_t+1 + ... + r_T | s_t]$
 
-V(s_t) = E_[τ~π] [r_t + γr_t+1 + ... + γ^(T-t)r_T | s_t]
+$V(s_t) = E_[τ~π] [r_t + γr_t+1 + ... + γ^(T-t)r_T | s_t]$
 
-V(s_t) = E_[τ~π] [G_t | s_t]    (G_t = total discounted return)
+$V(s_t) = E_[τ~π] [G_t | s_t]$    (G_t = total discounted return)
 
 L_t^VF = (V_φ(s_t) - G_t)^2
 
