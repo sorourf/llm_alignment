@@ -223,24 +223,11 @@ The value function is trained to predict the discounted sum of future rewards. T
 
 $L_t^{VF} = (V_\phi(s_t) - G_t)^2$
 
+Where $G_t$ is the discounted return (actual sum of future rewards).
+
 This loss compares the estimated value of a state from our model against the actual discounted return observed. By minimizing this loss, the value function learns to accurately predict expected future rewards.
 
 Now, in addition to our policy gradient loss function, we also have a value function loss. Both are optimized simultaneously during training, allowing the agent to improve both its action selection and its state evaluation capabilities.
-
-### Value Function Loss
-The value function is trained to predict the discounted sum of future rewards:
-
-$V(s_t) = E_{\tau \sim \pi} [r_t + r_{t+1} + ... + r_T | s_t]$
-
-$V(s_t) = E_{\tau \sim \pi} [r_t + γr_{t+1} + ... + γ^{(T-t)}r_T | s_t]$
-
-$V(s_t) = E_{\tau \sim \pi} [G_t | s_t]$   \quad (G_{t} = \text{total discounted return})$
-
-$L_{t}^{VF} = \left(V_{\phi}(s_{t}) - G_{t}\right)^2$
-
-$$L_{VF} = (V_\phi(s_t) - G_t)^2$$
-
-Where $G_t$ is the discounted return (actual sum of future rewards).
 
 ## Generalized Advantage Estimation (GAE)
 
