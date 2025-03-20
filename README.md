@@ -200,11 +200,12 @@ PPO uses an actor-critic architecture:
 ### Value Function Loss
 The value function is trained to predict the discounted sum of future rewards:
 
-$V(s_{t}) = \mathbb{E}_{[τ~π]} [r_{t} + r_{t+1} + \ldots + r_{T}|s_{t}]$
+$V(s_t) = E_[τ~π] [r_t + r_t+1 + ... + r_T | s_t]$
 
-$V(s_{t}) = \mathbb{E}_{\tau\sim\pi} [r_{t} + \gamma r_{t+1} + \ldots + \gamma^{T-t}r_{T}|s_{t}]$
+V(s_t) = E_[τ~π] [r_t + γr_t+1 + ... + γ^(T-t)r_T | s_t]
 
-$V(s_{t}) = \mathbb{E}_{\tau\sim\pi} [G_{t}|s_{t}] \quad (G_{t} = \text{total discounted return})$
+V(s_t) = E_[τ~π] [G_t | s_t]    (G_t = total discounted return)
+
 
 $L_{t}^{VF} = \left(V_{\phi}(s_{t}) - G_{t}\right)^2$
 
